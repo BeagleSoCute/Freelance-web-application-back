@@ -4,13 +4,12 @@ const {
   register,
   login,
   logout,
-  refreshToken,
+  extendAccessToken,
 } = require("../controllers/auth.controller");
 const { validateRegister } = require("../middleware/validators/user.validator");
-const { refreshTokenMiddleware } = require("../middleware/auth.middleware");
 router.post("/register", [validateRegister], register);
 router.post("/login", login);
 router.post("/logout", logout);
-router.get("/refresh_token", [refreshTokenMiddleware], refreshToken);
+router.get("/refresh_token", extendAccessToken);
 
 module.exports = router;

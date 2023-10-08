@@ -7,12 +7,6 @@ const expireToken = config.get("tokenExpire");
 const expireRefreshToken = config.get("refreshTokenExpire");
 const expireRememberRefresh = config.get("rememberRefreshTokenExpire");
 const tokenSecret = config.get("jwtSecret");
-const { clearCookies } = require("../services/cookie.service");
-const {
-  cookieHttpOnlyConfigs,
-  cookieNotHttpOnlyConfigs,
-} = require("../settings/cookies.setting");
-const { cookiesExpired } = require("../constants/cookies");
 const register = async (req, res) => {
   const errors = validationResult(req);
   const isError = !errors.isEmpty();
@@ -61,57 +55,53 @@ const login = async (req, res) => {
         id: user.id,
       },
     };
+    //Send token back via response
     const access_token = jwt.sign(payload, tokenSecret, {
       expiresIn: expireToken,
     });
     const refresh_token = jwt.sign(payload, config.get("jwtRefreshSecret"), {
       expiresIn: remember ? expireRememberRefresh : expireRefreshToken,
     });
-    const isAuth = true;
-    res.cookie("access_token", access_token, {
-      ...cookieHttpOnlyConfigs,
-      maxAge: cookiesExpired,
-    });
-    res.cookie("refresh_token", refresh_token, {
-      ...cookieHttpOnlyConfigs,
-      maxAge: cookiesExpired,
-    });
-    res.cookie("isAuth", isAuth, {
-      ...cookieNotHttpOnlyConfigs,
-      maxAge: cookiesExpired,
-    });
-    res.send("Cookies are set");
+    res.json({ access_token, refresh_token });
   } catch (err) {
     res.status(500).send("Server login is error ");
   }
 };
 const logout = (req, res) => {
-  clearCookies(res);
   try {
     res.send("Cookies are removed");
   } catch (err) {
     res.status(500).send("Server login is error ");
   }
 };
-const refreshToken = (req, res) => {
+const extendAccessToken = (req, res) => {
+  const { refresh_token } = req.body;
+  let userId;
+  try {
+    const decoded = jwt.verify(refresh_token, config.get("jwtRefreshSecret"));
+    req.user = decoded.user;
+  } catch (error) {
+    res.status(403).json({ msg: "Refresh token is not valid" });
+    return;
+  }
   const payload = {
     user: {
-      id: req.user.id,
+      id: userId,
     },
   };
-  const newToken = jwt.sign(payload, tokenSecret, {
-    expiresIn: expireToken,
-  });
-  res.cookie("access_token", newToken, {
-    ...cookieHttpOnlyConfigs,
-    maxAge: cookiesExpired,
-  });
-  res.send("New access token is set");
+  try {
+    const newToken = jwt.sign(payload, tokenSecret, {
+      expiresIn: expireToken,
+    });
+    res.json({ access_token: newToken });
+  } catch (error) {
+    res.status(500).send("Server extend access token is error ");
+  }
 };
 
 module.exports = {
   register,
   login,
   logout,
-  refreshToken,
+  extendAccessToken,
 };

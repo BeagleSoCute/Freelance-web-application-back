@@ -9,9 +9,7 @@ const cookieParser = require('cookie-parser')
 app.use(express.json({ extended: false })); //NOTE Allow us to read the request.body
 app.use(cookieParser());
 
-// app.get("/", (req, res) => {
-//   res.send("Hello Eve!");
-// });
+
 connectDB();
 app.use("/api/user", user);
 app.use("/api/auth", auth);
