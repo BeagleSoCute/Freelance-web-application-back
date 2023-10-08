@@ -8,7 +8,7 @@ const {
 const { authMiddleware } = require("../middleware/auth.middleware");
 
 router.get("/myData", [authMiddleware], getUserData);
-router.get("/allUsers", getAllUsersData);
+router.get("/allUsers", [authMiddleware], getAllUsersData);
 router.get("/details/:userId", getUserDetails);
 
 module.exports = router;
