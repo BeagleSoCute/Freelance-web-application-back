@@ -1,19 +1,13 @@
 const User = require("../models/user.model");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const { validationResult } = require("express-validator");
 const config = require("config");
 const expireToken = config.get("tokenExpire");
 const expireRefreshToken = config.get("refreshTokenExpire");
 const expireRememberRefresh = config.get("rememberRefreshTokenExpire");
 const tokenSecret = config.get("jwtSecret");
 const register = async (req, res) => {
-  const errors = validationResult(req);
-  const isError = !errors.isEmpty();
-  if (isError) {
-    return res.status(400).json({ errors: errors.array() });
-  }
-  const { email, first_name,last_name, phone_number, password } = req.body;
+  const { email, first_name, last_name, phone_number, password } = req.body;
   try {
     const user = await User.findOne({ email });
     if (user) {
@@ -27,22 +21,17 @@ const register = async (req, res) => {
       last_name,
       phone_number,
       password,
-      role:'user'
+      role: "user",
     });
     const salt = await bcrypt.genSalt(10);
     newUser.password = await bcrypt.hash(password, salt);
     newUser.save();
-    res.json(newUser);
+    res.json({ message:'Register success'});
   } catch (err) {
     res.status(500).send("Server register is error ");
   }
 };
 const login = async (req, res) => {
-  const errors = validationResult(req);
-  const isError = !errors.isEmpty();
-  if (isError) {
-    return res.status(400).json({ errors: errors.array() });
-  }
   const { email, password, remember } = req.body;
   try {
     const user = await User.findOne({ email });
