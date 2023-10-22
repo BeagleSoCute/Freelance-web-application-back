@@ -13,7 +13,7 @@ const register = async (req, res) => {
   if (isError) {
     return res.status(400).json({ errors: errors.array() });
   }
-  const { email, name, password } = req.body;
+  const { email, first_name,last_name, phone_number, password } = req.body;
   try {
     const user = await User.findOne({ email });
     if (user) {
@@ -23,8 +23,11 @@ const register = async (req, res) => {
     }
     newUser = new User({
       email,
-      name,
+      first_name,
+      last_name,
+      phone_number,
       password,
+      role:'user'
     });
     const salt = await bcrypt.genSalt(10);
     newUser.password = await bcrypt.hash(password, salt);

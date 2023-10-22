@@ -31,15 +31,11 @@ const userSchema = new mongoose.Schema({
   description: {
     type: String,
   },
-  contract: {
-    type: String,
-  },
-  skills: [],
- 
+  skills: [String],
   coin: {
     type: Number,
   },
-  portfolio: {
+  portfolios:[ {
     id:{
       type:String
     },
@@ -56,7 +52,7 @@ const userSchema = new mongoose.Schema({
     customer: {
       type:String
     }
-  },
+  }],
   posts:[{
     type: mongoose.Schema.Types.ObjectId,
     ref:'post'
