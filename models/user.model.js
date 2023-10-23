@@ -1,6 +1,5 @@
 const mongoose = require("mongoose");
 
-
 const userSchema = new mongoose.Schema({
   email: {
     type: String,
@@ -26,7 +25,7 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    required: true,
+    default: "user",
   },
   description: {
     type: String,
@@ -35,28 +34,36 @@ const userSchema = new mongoose.Schema({
   coin: {
     type: Number,
   },
-  portfolios:[ {
-    id:{
-      type:String
+  portfolios: [
+    {
+      id: {
+        type: String,
+      },
+      img: {
+        type: String,
+      },
+      title: {
+        type: String,
+      },
+      description: {
+        type: String,
+      },
+      skills: [String],
+      customer: {
+        type: String,
+      },
     },
-    img: {
-      type: String,
+  ],
+  posts: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "post",
     },
-    title: {
-      type: String,
-    },
-    description: {
-      type: String,
-    },
-    skills: [String],
-    customer: {
-      type:String
-    }
-  }],
-  posts:[{
-    type: mongoose.Schema.Types.ObjectId,
-    ref:'post'
-  }]
+  ],
+  is_provide_services: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 module.exports = User = mongoose.model("user", userSchema);
