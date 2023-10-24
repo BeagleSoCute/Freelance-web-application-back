@@ -25,7 +25,7 @@ const register = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     newUser.password = await bcrypt.hash(password, salt);
     newUser.save();
-    res.json({ message:'Register success'});
+    res.json({ message: "Register success" });
   } catch (err) {
     res.status(500).send("Server register is error ");
   }
@@ -67,10 +67,11 @@ const logout = (req, res) => {
 };
 const extendAccessToken = (req, res) => {
   const { refresh_token } = req.body;
+  console.log("refresh_token", refresh_token);
   let userId;
   try {
     const decoded = jwt.verify(refresh_token, config.get("jwtRefreshSecret"));
-    req.user = decoded.user;
+    userId = decoded.user.id;
   } catch (error) {
     res.status(403).json({ msg: "Refresh token is not valid" });
     return;

@@ -10,6 +10,6 @@ const { validateRegister } = require("../middleware/validators/user.validator");
 router.post("/register", [validateRegister], register);
 router.post("/login", login);
 router.post("/logout", logout);
-router.get("/refresh_token", extendAccessToken);
+router.post("/refresh_token", extendAccessToken);
 
 module.exports = router;
