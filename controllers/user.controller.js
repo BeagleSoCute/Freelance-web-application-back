@@ -33,7 +33,7 @@ const getUserDetails = async (req, res) => {
 };
 
 const updateUser = async (req, res) => {
-  const userId = req.params.user.id;
+  const userId = req.user.id;
   const data = req.body;
   try {
     await User.updateOne({ _id: userId },data);
