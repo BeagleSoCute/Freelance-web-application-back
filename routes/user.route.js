@@ -4,11 +4,13 @@ const {
   getUserData,
   getAllUsersData,
   getUserDetails,
+  updateUser,
 } = require("../controllers/user.controller");
 const { authMiddleware } = require("../middleware/auth.middleware");
 
 router.get("/myData", [authMiddleware], getUserData);
 router.get("/allUsers", [authMiddleware], getAllUsersData);
 router.get("/details/:userId", getUserDetails);
+router.put("/updateProfile", updateUser);
 
 module.exports = router;
