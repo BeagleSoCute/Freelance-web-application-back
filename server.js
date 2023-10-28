@@ -8,11 +8,13 @@ const cookieParser = require('cookie-parser')
 
 app.use(express.json({ extended: false })); //NOTE Allow us to read the request.body
 app.use(cookieParser());
-
+app.use(express.json({ limit: '50mb'})); 
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 connectDB();
 app.use("/api/user", user);
 app.use("/api/auth", auth);
+
 
 //NOTE listen to function to make our server application listen to client requests
 app.listen(port, () => {

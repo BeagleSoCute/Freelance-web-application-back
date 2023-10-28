@@ -67,7 +67,6 @@ const logout = (req, res) => {
 };
 const extendAccessToken = (req, res) => {
   const { refresh_token } = req.body;
-  console.log("refresh_token", refresh_token);
   let userId;
   try {
     const decoded = jwt.verify(refresh_token, config.get("jwtRefreshSecret"));
