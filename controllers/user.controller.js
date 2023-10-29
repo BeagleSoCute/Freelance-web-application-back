@@ -57,9 +57,38 @@ const updateUser = async (req, res) => {
   }
 };
 
+const addPortfolio = async (req, res) => {
+  const userId = req.user.id;
+  const data = req.body;
+  const image = req.file;
+  const portfolioData = JSON.parse(data.portfolioData);
+  try {
+    const imageUrl = await uploadImage(image);
+    let savingData;
+    if (!imageUrl) {
+      savingData = portfolioData;
+    } else {
+      savingData = {
+        ...portfolioData,
+        portfolio_picture: imageUrl,
+      };
+    }
+    await User.updateOne(
+      { _id: userId },
+      { $push: { portfolios: savingData } }
+    );
+    const savedData = await User.findOne({ _id: userId }, { password: 0 });
+    res.json(savedData);
+  } catch (error) {
+    console.log("error in updateUser", error);
+    res.status(500).send("Server updateUser is error ");
+  }
+};
+
 module.exports = {
   getUserData,
   getAllUsersData,
   getUserDetails,
   updateUser,
+  addPortfolio
 };

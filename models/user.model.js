@@ -42,7 +42,7 @@ const userSchema = new mongoose.Schema({
       id: {
         type: String,
       },
-      img: {
+      portfolio_picture: {
         type: String,
       },
       title: {
