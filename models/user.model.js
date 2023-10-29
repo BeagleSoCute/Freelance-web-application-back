@@ -1,6 +1,9 @@
 const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema({
+  profile_picture:{
+    type:String
+  },
   email: {
     type: String,
     unique: true,

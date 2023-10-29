@@ -1,5 +1,5 @@
 const User = require("../models/user.model");
-const uploadImage = require("../helpers/upload")
+const uploadImage = require("../helpers/upload");
 const getUserData = async (req, res) => {
   const id = req.user.id;
   try {
@@ -39,11 +39,20 @@ const updateUser = async (req, res) => {
   const userData = JSON.parse(data.userData);
   try {
     const imageUrl = await uploadImage(image);
-    console.log("imageUrl", imageUrl);
-    await User.updateOne({ _id: userId }, userData);
-    res.status(200).json({ msg: "Update Success" });
+    let savingData;
+    if (!imageUrl) {
+      savingData = userData;
+    } else {
+      savingData = {
+        ...userData,
+        profile_picture: imageUrl,
+      };
+    }
+    await User.updateOne({ _id: userId }, savingData);
+    const savedData = await User.findOne({ _id: userId }, { password: 0 });
+    res.json(savedData);
   } catch (error) {
-    console.log('error in updateUser',error)
+    console.log("error in updateUser", error);
     res.status(500).send("Server updateUser is error ");
   }
 };

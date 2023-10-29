@@ -5,6 +5,9 @@ const bucket = gc.bucket("freelancerapp");
 
 const uploadImage = (file) =>
   new Promise((resolve, reject) => {
+    if(!file){
+      resolve(undefined);
+    }
     const { originalname, buffer } = file;
     const randomName = randomString(6);
     const currentDate = new Date();
