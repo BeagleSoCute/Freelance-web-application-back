@@ -5,7 +5,9 @@ const {
   getAllUsersData,
   getUserDetails,
   updateUser,
-  addPortfolio
+  addPortfolio,
+  editPortfolio,
+  deletePortfolio,
 } = require("../controllers/user.controller");
 const { authMiddleware } = require("../middleware/auth.middleware");
 const uploadMiddleware = require("../middleware/multer.middleware");
@@ -21,7 +23,13 @@ router.put(
 router.put(
   "/addPortfolio",
   [authMiddleware, uploadMiddleware.single("image")],
-  updateUser
+  addPortfolio
 );
+router.put(
+  "/editPortfolio",
+  [authMiddleware, uploadMiddleware.single("image")],
+  editPortfolio
+);
+router.put("/deletePortfolio", [authMiddleware], deletePortfolio);
 
 module.exports = router;
