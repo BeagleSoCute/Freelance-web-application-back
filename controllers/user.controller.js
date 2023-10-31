@@ -91,23 +91,21 @@ const editPortfolio = async (req, res) => {
   const data = req.body;
   const image = req.file;
   const portfolioData = JSON.parse(data.portfolioData);
+  const originalImage = data.originalImage
   try {
     const imageUrl = await uploadImage(image);
     let savingData;
-    if (!imageUrl) {
-      savingData = portfolioData;
-    } else {
+   
       savingData = {
         ...portfolioData,
-        portfolio_picture: imageUrl,
+        portfolio_picture: imageUrl? imageUrl : originalImage,
       };
-    }
-    await User.updateOne(
-      { _id: userId, "portfolios._id": portfolioData._id },
-      { $set: { portfolios: savingData } }
+   await User.updateOne(
+      { _id: userId, 'portfolios._id': portfolioData._id },
+      { $set: { 'portfolios.$': savingData } }
     );
-    const savedData = await User.findOne({ _id: userId }, { password: 0 });
-    res.json(savedData);
+    const returnData = await User.findOne({ _id: userId }, { password: 0 });
+    res.json(returnData);
   } catch (error) {
     console.log("error in editPortfolio", error);
     res.status(500).send("Server editPortfolio is error ");
