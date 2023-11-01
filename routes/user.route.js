@@ -30,6 +30,6 @@ router.put(
   [authMiddleware, uploadMiddleware.single("image")],
   editPortfolio
 );
-router.put("/deletePortfolio", [authMiddleware], deletePortfolio);
+router.delete("/deletePortfolio/:portfolioId", [authMiddleware], deletePortfolio);
 
 module.exports = router;

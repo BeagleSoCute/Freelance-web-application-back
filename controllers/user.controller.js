@@ -114,7 +114,7 @@ const editPortfolio = async (req, res) => {
 
 const deletePortfolio = async (req, res) => {
   const userId = req.user.id;
-  const { portfolioId } = req.body;
+  const portfolioId = req.params.portfolioId;
   try {
     await User.updateOne(
       { _id: userId },
