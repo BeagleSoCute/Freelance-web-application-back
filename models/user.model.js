@@ -1,5 +1,31 @@
 const mongoose = require("mongoose");
 
+const feedbackModel = {
+  positive: {
+    type: Number,
+    default: 0,
+  },
+  negative: {
+    type: Number,
+    default: 0,
+  },
+  neutral: {
+    type: Number,
+    default: 0,
+  },
+  review: [
+    {
+      user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "post",
+      },
+      feedback: { type: String },
+      date: { type: String },
+      comment: { type: String },
+    },
+  ],
+};
+
 const userSchema = new mongoose.Schema({
   profile_picture: {
     type: String,
@@ -57,31 +83,8 @@ const userSchema = new mongoose.Schema({
       },
     },
   ],
-  feedbacks: {
-    positive: {
-      type: Number,
-      default: 0,
-    },
-    negative: {
-      type: Number,
-      default: 0,
-    },
-    neutral: {
-      type: Number,
-      default: 0,
-    },
-    review: [
-      {
-        user: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "post",
-        },
-        feedback: { type: String },
-        date: { type: String },
-        comment: { type: String },
-      },
-    ],
-  },
+  seeker_feedbacks: feedbackModel,
+  provider_feedbacks: feedbackModel,
   posts: [
     {
       type: mongoose.Schema.Types.ObjectId,
