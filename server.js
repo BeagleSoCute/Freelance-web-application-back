@@ -4,6 +4,7 @@ const app = express();
 const port = 5000;
 const user = require("./routes/user.route");
 const auth = require("./routes/auth.route");
+const service = require("./routes/service.route")
 const cookieParser = require('cookie-parser')
 
 app.use(express.json({ extended: false })); //NOTE Allow us to read the request.body
@@ -14,6 +15,7 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
 connectDB();
 app.use("/api/user", user);
 app.use("/api/auth", auth);
+app.use("/api/service", service);
 
 
 //NOTE listen to function to make our server application listen to client requests
