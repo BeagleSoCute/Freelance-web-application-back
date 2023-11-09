@@ -1,9 +1,10 @@
 const mongoose = require("mongoose");
+const User = require('../models/user.model'); // Import the User model
 
 const provideServiceListSchema = new mongoose.Schema({
   owner: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
+    ref: User,
   },
   title: {
     type: String,

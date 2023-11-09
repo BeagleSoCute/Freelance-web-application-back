@@ -1,9 +1,11 @@
 const ProvideServiceList = require("../models/provideServiceList.model");
 
 const showPostServicePending = async (req, res) => {
-  const postID = req.params.postID;
   try {
-    const data = await ProvideServiceList.findOne({ _id: postID });
+    const data = await ProvideServiceList.find({ status: "pending" }).populate({
+      path: "owner",
+      select: "first_name last_name",
+    });
     res.status(200).json(data);
   } catch (error) {
     console.log("error", error);
