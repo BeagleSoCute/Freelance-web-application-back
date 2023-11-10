@@ -43,6 +43,9 @@ const retriveProvideServiceData = async (postID, userID) => {
     }).populate({
       path: "owner",
       select: "first_name last_name portfolios",
+    }).populate({
+      path: 'candidates.user',
+      select: 'first_name last_name',
     });
     const userData = await User.findOne({ _id: userID }).select("role");
     if (userData.role !== "admin" && serviceData.status === "pending") {
@@ -53,9 +56,11 @@ const retriveProvideServiceData = async (postID, userID) => {
     const retrivePortfolioData = userPortfolios.filter((item) =>
       relatedPortfolioIDs.includes(item._id)
     );
+    const isRequest = serviceData.candidates.some(item => item.user._id.toString() === userID)
     const transformData = {
       ...serviceData.toObject(),
       related_portfolios: retrivePortfolioData,
+      isRequest
     };
     return { success: true, payload: transformData };
   } catch (error) {
@@ -71,8 +76,17 @@ const retriveFindServiceData = async (postID, userID) => {
     }).populate({
       path: "owner",
       select: "first_name last_name portfolios",
+    }).populate({
+      path: 'candidates.user',
+      select: 'first_name last_name',
     });
-    return { success: true, payload: serviceData };
+    const isRequest = serviceData.candidates.some(item => item.user._id.toString() === userID)
+    const data = {
+      ...serviceData.toObject(),
+      isRequest
+    }
+    
+    return { success: true, payload: data };
   } catch (error) {
     console.log("error", error);
     return { success: false };
