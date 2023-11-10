@@ -7,6 +7,6 @@ const { authMiddleware } = require("../middleware/auth.middleware");
 router.post("/addProvideService", [authMiddleware], addProvideService);
 router.post("/addFindService", [authMiddleware], addfindService);
 router.get("/showPostServiceLists", [authMiddleware], showPostServiceLists);
-router.get("/showPostDetails/:postID", [authMiddleware], seePostServiceDetail);
+router.get("/showPostDetails/:type/:postID", [authMiddleware], seePostServiceDetail);
 
 module.exports = router;

@@ -36,9 +36,7 @@ const addfindService = async (req, res) => {
   }
 };
 
-const seePostServiceDetail = async (req, res) => {
-  const postID = req.params.postID;
-  const userID = req.user.id;
+const retriveProvideServiceData = async (postID, userID) => {
   try {
     const serviceData = await ProvideServiceList.findOne({
       _id: postID,
@@ -59,10 +57,52 @@ const seePostServiceDetail = async (req, res) => {
       ...serviceData.toObject(),
       related_portfolios: retrivePortfolioData,
     };
-    res.status(200).json(transformData);
+    return { success: true, payload: transformData };
   } catch (error) {
     console.log("error", error);
-    res.status(500).send("Server seePostServiceDetail is error ");
+    return { success: false };
+  }
+};
+
+const retriveFindServiceData = async (postID, userID) => {
+  try {
+    const serviceData = await FindServiceList.findOne({
+      _id: postID,
+    }).populate({
+      path: "owner",
+      select: "first_name last_name portfolios",
+    });
+    return { success: true, payload: serviceData };
+  } catch (error) {
+    console.log("error", error);
+    return { success: false };
+  }
+};
+
+const seePostServiceDetail = async (req, res) => {
+  const postID = req.params.postID;
+  const postType = req.params.type;
+  const userID = req.user.id;
+  console.log("postType", postType);
+  if (!postType || postType === "provideService") {
+    const { success, payload } = await retriveProvideServiceData(
+      postID,
+      userID
+    );
+    if (success) {
+      res.status(200).json(payload);
+    } else {
+      console.log("500 error in provide post detail");
+      res.status(500).send("Server see provide service post is error ");
+    }
+  } else {
+    const { success, payload } = await retriveFindServiceData(postID, userID);
+    if (success) {
+      res.status(200).json(payload);
+    } else {
+      console.log("500 error in find post detail");
+      res.status(500).send("Server see find service post is error ");
+    }
   }
 };
 
@@ -70,8 +110,14 @@ const showPostServiceLists = async (req, res) => {
   try {
     const provideServiceLists = await ProvideServiceList.find({
       status: { $ne: "pending" },
+    }).populate({
+      path: "owner",
+      select: "first_name last_name",
     });
-    const findServiceList = await FindServiceList.find();
+    const findServiceList = await FindServiceList.find().populate({
+      path: "owner",
+      select: "first_name last_name",
+    });
     res.status(200).json({ provideServiceLists, findServiceList });
   } catch (error) {
     console.log("error", error);

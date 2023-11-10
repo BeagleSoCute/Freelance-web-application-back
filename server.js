@@ -8,6 +8,8 @@ const service = require("./routes/service.route");
 const admin = require("./routes/admin.route");
 const cookieParser = require("cookie-parser");
 
+app.disable('etag');
+
 app.use(express.json({ extended: false })); //NOTE Allow us to read the request.body
 app.use(cookieParser());
 app.use(express.json({ limit: "50mb" }));
