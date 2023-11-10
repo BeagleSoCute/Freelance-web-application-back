@@ -16,6 +16,9 @@ const provideServiceListSchema = new mongoose.Schema({
     type: String,
     default: "pending",
   },
+  reason:{
+    type:String
+  },
   type: {
     type: String,
   },

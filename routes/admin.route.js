@@ -4,6 +4,6 @@ const { showPostServicePending, updatePostServiceStatus } = require("../controll
 const { authMiddleware } = require("../middleware/auth.middleware");
 
 router.get("/showPostServicePending", [authMiddleware], showPostServicePending);
-router.put("/updatePostServiceStatus", [authMiddleware], updatePostServiceStatus);
+router.put("/updatePostServiceStatus/:postID", [authMiddleware], updatePostServiceStatus);
 
 module.exports = router;

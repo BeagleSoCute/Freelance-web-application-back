@@ -1,5 +1,6 @@
 const FindServiceList = require("../models/findServiceList.model");
 const ProvideServiceList = require("../models/provideServiceList.model");
+const User = require("../models/user.model");
 
 const addProvideService = async (req, res) => {
   const userID = req.user.id;
@@ -37,21 +38,27 @@ const addfindService = async (req, res) => {
 
 const seePostServiceDetail = async (req, res) => {
   const postID = req.params.postID;
+  const userID = req.user.id;
   try {
-    const data = await ProvideServiceList.findOne({ _id: postID }).populate({
+    const serviceData = await ProvideServiceList.findOne({
+      _id: postID,
+    }).populate({
       path: "owner",
-      select: "name",
+      select: "first_name last_name portfolios",
     });
-    const relatedPortfolioIDs = data.related_portfolios;
-    const userPortfolios = data.owner.portfolios;
+    const userData = await User.findOne({ _id: userID }).select("role");
+    if (userData.role !== "admin" && serviceData.status === "pending") {
+      return res.status(403).send("Permission denied. You are not an admin.");
+    }
+    const relatedPortfolioIDs = serviceData.related_portfolios;
+    const userPortfolios = serviceData.owner.portfolios;
     const retrivePortfolioData = userPortfolios.filter((item) =>
-      relatedPortfolioIDs.includes(item.id)
+      relatedPortfolioIDs.includes(item._id)
     );
     const transformData = {
-      ...data,
+      ...serviceData.toObject(),
       related_portfolios: retrivePortfolioData,
     };
-
     res.status(200).json(transformData);
   } catch (error) {
     console.log("error", error);
@@ -72,4 +79,9 @@ const showPostServiceLists = async (req, res) => {
   }
 };
 
-module.exports = { addProvideService, addfindService, seePostServiceDetail, showPostServiceLists };
+module.exports = {
+  addProvideService,
+  addfindService,
+  seePostServiceDetail,
+  showPostServiceLists,
+};
