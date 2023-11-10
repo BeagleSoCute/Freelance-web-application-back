@@ -40,13 +40,15 @@ const retriveProvideServiceData = async (postID, userID) => {
   try {
     const serviceData = await ProvideServiceList.findOne({
       _id: postID,
-    }).populate({
-      path: "owner",
-      select: "first_name last_name portfolios",
-    }).populate({
-      path: 'candidates.user',
-      select: 'first_name last_name',
-    });
+    })
+      .populate({
+        path: "owner",
+        select: "first_name last_name portfolios",
+      })
+      .populate({
+        path: "candidates.user",
+        select: "first_name last_name",
+      });
     const userData = await User.findOne({ _id: userID }).select("role");
     if (userData.role !== "admin" && serviceData.status === "pending") {
       return res.status(403).send("Permission denied. You are not an admin.");
@@ -56,11 +58,13 @@ const retriveProvideServiceData = async (postID, userID) => {
     const retrivePortfolioData = userPortfolios.filter((item) =>
       relatedPortfolioIDs.includes(item._id)
     );
-    const isRequest = serviceData.candidates.some(item => item.user._id.toString() === userID)
+    const requestInfo = serviceData.candidates.find(
+      (item) => item.user._id.toString() === userID
+    );
     const transformData = {
       ...serviceData.toObject(),
       related_portfolios: retrivePortfolioData,
-      isRequest
+      requestInfo: requestInfo ? requestInfo : null,
     };
     return { success: true, payload: transformData };
   } catch (error) {
@@ -73,19 +77,23 @@ const retriveFindServiceData = async (postID, userID) => {
   try {
     const serviceData = await FindServiceList.findOne({
       _id: postID,
-    }).populate({
-      path: "owner",
-      select: "first_name last_name portfolios",
-    }).populate({
-      path: 'candidates.user',
-      select: 'first_name last_name',
-    });
-    const isRequest = serviceData.candidates.some(item => item.user._id.toString() === userID)
+    })
+      .populate({
+        path: "owner",
+        select: "first_name last_name portfolios",
+      })
+      .populate({
+        path: "candidates.user",
+        select: "first_name last_name",
+      });
+    const requestInfo = serviceData.candidates.find(
+      (item) => item.user._id.toString() === userID
+    );
     const data = {
       ...serviceData.toObject(),
-      isRequest
-    }
-    
+      requestInfo: requestInfo ? requestInfo : null,
+    };
+
     return { success: true, payload: data };
   } catch (error) {
     console.log("error", error);
@@ -120,6 +128,7 @@ const seePostServiceDetail = async (req, res) => {
 };
 
 const showPostServiceLists = async (req, res) => {
+  const userID = req.user.id;
   try {
     const provideServiceLists = await ProvideServiceList.find({
       status: { $ne: "pending" },
@@ -131,7 +140,20 @@ const showPostServiceLists = async (req, res) => {
       path: "owner",
       select: "first_name last_name",
     });
-    res.status(200).json({ provideServiceLists, findServiceList });
+
+    const filterProvide = provideServiceLists.filter(
+      (item) => item.owner._id.toString() !== userID
+    );
+    const filterFind = findServiceList.filter(
+      (item) => item.owner._id.toString() !== userID
+    );
+
+    res
+      .status(200)
+      .json({
+        provideServiceLists: filterProvide,
+        findServiceList: filterFind,
+      });
   } catch (error) {
     console.log("error", error);
     res.status(500).send("Server showPostServicePending is error ");
@@ -145,21 +167,18 @@ const sendServiceRequest = async (req, res) => {
   const data = req.body;
   const { description } = data;
   try {
-    if(postType === 'provideService'){
+    if (postType === "provideService") {
       await ProvideServiceList.updateOne(
         { _id: postID },
-        { $push: { candidates: { description:description, user: userID } } }
-        
+        { $push: { candidates: { description: description, user: userID } } }
       );
-    }else{
+    } else {
       await FindServiceList.updateOne(
         { _id: postID },
-        { $push: { candidates: { description:description, user: userID } } }
-        
+        { $push: { candidates: { description: description, user: userID } } }
       );
     }
     res.status(200).send("Send a request success");
-
   } catch (error) {
     console.log("error", error);
     res.status(500).send("Server sending a request is error ");
