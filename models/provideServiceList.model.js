@@ -42,13 +42,12 @@ const provideServiceListSchema = new mongoose.Schema({
   },
   candidates: [
     {
-      id: { type: String },
       user: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
+        ref: User,
       },
-      details: { type: String },
-      status: { type: String },
+      description: { type: String },
+      status: { type: String, default:'pending' },
     },
   ],
 });

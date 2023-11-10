@@ -83,7 +83,6 @@ const seePostServiceDetail = async (req, res) => {
   const postID = req.params.postID;
   const postType = req.params.type;
   const userID = req.user.id;
-  console.log("postType", postType);
   if (!postType || postType === "provideService") {
     const { success, payload } = await retriveProvideServiceData(
       postID,
@@ -125,9 +124,38 @@ const showPostServiceLists = async (req, res) => {
   }
 };
 
+const sendServiceRequest = async (req, res) => {
+  const userID = req.user.id;
+  const postID = req.params.postID;
+  const postType = req.params.type;
+  const data = req.body;
+  const { description } = data;
+  try {
+    if(postType === 'provideService'){
+      await ProvideServiceList.updateOne(
+        { _id: postID },
+        { $push: { candidates: { description:description, user: userID } } }
+        
+      );
+    }else{
+      await FindServiceList.updateOne(
+        { _id: postID },
+        { $push: { candidates: { description:description, user: userID } } }
+        
+      );
+    }
+    res.status(200).send("Send a request success");
+
+  } catch (error) {
+    console.log("error", error);
+    res.status(500).send("Server sending a request is error ");
+  }
+};
+
 module.exports = {
   addProvideService,
   addfindService,
   seePostServiceDetail,
   showPostServiceLists,
+  sendServiceRequest,
 };
