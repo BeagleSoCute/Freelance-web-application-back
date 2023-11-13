@@ -49,9 +49,15 @@ const retriveProvideServiceData = async (postID, userID) => {
         path: "candidates.user",
         select: "first_name last_name",
       });
+    const isOwner = serviceData.owner._id.toString() === userID;
+
     const userData = await User.findOne({ _id: userID }).select("role");
-    if (userData.role !== "admin" && serviceData.status === "pending") {
-      return res.status(403).send("Permission denied. You are not an admin.");
+    if (
+      userData.role !== "admin" &&
+      serviceData.status === "pending" &&
+      !isOwner
+    ) {
+      return { success: false };
     }
     const relatedPortfolioIDs = serviceData.related_portfolios;
     const userPortfolios = serviceData.owner.portfolios;
@@ -65,6 +71,7 @@ const retriveProvideServiceData = async (postID, userID) => {
       ...serviceData.toObject(),
       related_portfolios: retrivePortfolioData,
       requestInfo: requestInfo ? requestInfo : null,
+      isOwner,
     };
     return { success: true, payload: transformData };
   } catch (error) {
@@ -89,9 +96,12 @@ const retriveFindServiceData = async (postID, userID) => {
     const requestInfo = serviceData.candidates.find(
       (item) => item.user._id.toString() === userID
     );
+    const isOwner = serviceData.owner._id.toString() === userID;
+
     const data = {
       ...serviceData.toObject(),
       requestInfo: requestInfo ? requestInfo : null,
+      isOwner,
     };
 
     return { success: true, payload: data };
@@ -132,28 +142,21 @@ const showPostServiceLists = async (req, res) => {
   try {
     const provideServiceLists = await ProvideServiceList.find({
       status: { $ne: "pending" },
+      owner: { $ne: userID },
     }).populate({
       path: "owner",
       select: "first_name last_name",
     });
-    const findServiceList = await FindServiceList.find().populate({
+    const findServiceList = await FindServiceList.find({
+      owner: { $ne: userID },
+    }).populate({
       path: "owner",
       select: "first_name last_name",
     });
-
-    const filterProvide = provideServiceLists.filter(
-      (item) => item.owner._id.toString() !== userID
-    );
-    const filterFind = findServiceList.filter(
-      (item) => item.owner._id.toString() !== userID
-    );
-
-    res
-      .status(200)
-      .json({
-        provideServiceLists: filterProvide,
-        findServiceList: filterFind,
-      });
+    res.status(200).json({
+      provideServiceLists: provideServiceLists,
+      findServiceList: findServiceList,
+    });
   } catch (error) {
     console.log("error", error);
     res.status(500).send("Server showPostServicePending is error ");
@@ -167,21 +170,133 @@ const sendServiceRequest = async (req, res) => {
   const data = req.body;
   const { description } = data;
   try {
+    let serviceType = "";
     if (postType === "provideService") {
       await ProvideServiceList.updateOne(
         { _id: postID },
         { $push: { candidates: { description: description, user: userID } } }
       );
+      serviceType = "requestProvideService";
     } else {
       await FindServiceList.updateOne(
         { _id: postID },
         { $push: { candidates: { description: description, user: userID } } }
       );
+      serviceType = "requestFindService";
     }
+    await User.updateOne({ _id: userID }, { $push: { [serviceType]: postID } });
     res.status(200).send("Send a request success");
   } catch (error) {
     console.log("error", error);
     res.status(500).send("Server sending a request is error ");
+  }
+};
+
+const showMyServiceLists = async (req, res) => {
+  const userID = req.user.id;
+  try {
+    const provideServiceLists = await ProvideServiceList.find({
+      owner: userID,
+    }).populate({
+      path: "owner",
+      select: "first_name last_name",
+    });
+    const findServiceList = await FindServiceList.find({
+      owner: userID,
+    }).populate({
+      path: "owner",
+      select: "first_name last_name",
+    });
+    const userData = await User.findOne({ _id: userID })
+      .populate({
+        path: "requestProvideService",
+        populate: [
+          { path: "owner", select: "first_name last_name" },
+          { path: "candidates.user", select: "first_name last_name" },
+        ],
+      })
+      .populate({
+        path: "requestFindService",
+        populate: [
+          { path: "owner", select: "first_name last_name" },
+          { path: "candidates", select: "" },
+          { path: "candidates.user", select: "first_name last_name" },
+        ],
+      });
+
+    const provideRequestList = userData.requestProvideService;
+    const findRequestList = userData.requestFindService;
+
+    let requestProvideIndo;
+    let requestFindInfo;
+
+    if (provideRequestList && provideRequestList.length > 0) {
+      requestProvideIndo = provideRequestList.flatMap((item) =>
+        item.candidates
+          .filter((candidate) => candidate.user._id == userID)
+          .map((candidate) => {
+            return { ...item.toObject(), candidateStatus: candidate.status };
+          })
+      );
+    }
+    if (findRequestList && findRequestList.length > 0) {
+      requestFindInfo = findRequestList.flatMap((item) =>
+        item.candidates
+          .filter((candidate) => candidate.user._id == userID)
+          .map((candidate) => {
+            return { ...item.toObject(), candidateStatus: candidate.status };
+          })
+      );
+    }
+    res.status(200).json({
+      provideServiceLists: provideServiceLists,
+      findServiceList: findServiceList,
+      requestList: [...requestProvideIndo, ...requestFindInfo],
+    });
+  } catch (error) {
+    console.log("error", error);
+    res.status(500).send("Server showPostServicePending is error ");
+  }
+};
+
+const approveCandidate = async (req, res) => {
+  const userID = req.user.id;
+  const postID = req.params.postID;
+  const postType = req.params.type;
+  const data = req.body;
+  const { status, candidateID } = data;
+  try {
+    const isApprove = status === "approve";
+    if (postType === "provideService") {
+      await ProvideServiceList.updateOne(
+        { _id: postID, "candidates._id": candidateID },
+        {
+          $set: {
+            "candidates.$.status": status,
+            status: isApprove ? "close" : "active",
+          },
+        }
+      );
+    } else {
+      await FindServiceList.updateOne(
+        { _id: postID, "candidates._id": candidateID },
+        {
+          $set: {
+            "candidates.$.status": status,
+            status: isApprove ? "close" : "active",
+          },
+        }
+      );
+    }
+
+    await FindServiceList.updateOne(
+      { _id: postID },
+      { $push: { candidates: { description: description, user: userID } } }
+    );
+    res.status(200).send("Approve candidate success");
+  } catch (error) {
+    console.log("error", error);
+    res.status(500).send("Server approve candidate is error ");
   }
 };
 
@@ -191,4 +306,6 @@ module.exports = {
   seePostServiceDetail,
   showPostServiceLists,
   sendServiceRequest,
+  showMyServiceLists,
+  approveCandidate,
 };

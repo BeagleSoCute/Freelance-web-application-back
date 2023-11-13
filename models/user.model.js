@@ -85,16 +85,28 @@ const userSchema = new mongoose.Schema({
   ],
   seeker_feedbacks: feedbackModel,
   provider_feedbacks: feedbackModel,
-  posts: [
+  // posts: [
+  //   {
+  //     type: mongoose.Schema.Types.ObjectId,
+  //     ref: "post",
+  //   },
+  // ],
+  requestProvideService: [
     {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "post",
+      ref: function () {
+        return require("../models/provideServiceList.model");
+      },
     },
   ],
-  is_provide_services: {
-    type: Boolean,
-    default: false,
-  },
+  requestFindService: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: function () {
+        return require("../models/findServiceList.model");
+      },
+    },
+  ],
 });
 
 module.exports = User = mongoose.model("user", userSchema);

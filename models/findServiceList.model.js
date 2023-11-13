@@ -14,7 +14,7 @@ const findServiceListSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    default: "pending",
+    default: "active",
   },
   type: {
     type: String,

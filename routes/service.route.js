@@ -7,6 +7,8 @@ const {
   showPostServiceLists,
   seePostServiceDetail,
   sendServiceRequest,
+  showMyServiceLists, 
+  approveCandidate
 } = require("../controllers/service.controller");
 const { authMiddleware } = require("../middleware/auth.middleware");
 
@@ -19,5 +21,7 @@ router.get(
   seePostServiceDetail
 );
 router.put("/sendServiceRequest/:type/:postID", [authMiddleware], sendServiceRequest);
+router.get("/showMyServiceLists", [authMiddleware], showMyServiceLists);
+router.put("/approveCandidate/:type/:postID", [authMiddleware], approveCandidate);
 
 module.exports = router;

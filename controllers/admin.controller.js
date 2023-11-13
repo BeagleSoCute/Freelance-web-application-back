@@ -16,11 +16,11 @@ const showPostServicePending = async (req, res) => {
 const updatePostServiceStatus = async (req, res) => {
   const postID = req.params.postID;
   const data = req.body;
-  const {status, reason} = data
+  const {status, reason, date} = data
   try {
     await ProvideServiceList.updateOne(
       { _id: postID },
-      { $set: { status, reason } }
+      { $set: { status, reason, date } }
     );
     res.status(200).send("Update a post status success");
   } catch (error) {
