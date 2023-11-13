@@ -20,7 +20,7 @@ const updatePostServiceStatus = async (req, res) => {
   try {
     await ProvideServiceList.updateOne(
       { _id: postID },
-      { $set: { status, reason, date } }
+      { $set: { status: approve === 'approve' ? 'active' : 'reject', reason, date } }
     );
     res.status(200).send("Update a post status success");
   } catch (error) {

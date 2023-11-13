@@ -141,7 +141,7 @@ const showPostServiceLists = async (req, res) => {
   const userID = req.user.id;
   try {
     const provideServiceLists = await ProvideServiceList.find({
-      status: { $ne: "pending" },
+      status: { $nin: ["pending", "reject", "close"] },
       owner: { $ne: userID },
     }).populate({
       path: "owner",
@@ -149,6 +149,7 @@ const showPostServiceLists = async (req, res) => {
     });
     const findServiceList = await FindServiceList.find({
       owner: { $ne: userID },
+      status: { $nin: ["reject", "close"] },
     }).populate({
       path: "owner",
       select: "first_name last_name",
@@ -168,19 +169,27 @@ const sendServiceRequest = async (req, res) => {
   const postID = req.params.postID;
   const postType = req.params.type;
   const data = req.body;
-  const { description } = data;
+  const { description, date } = data;
   try {
     let serviceType = "";
     if (postType === "provideService") {
       await ProvideServiceList.updateOne(
         { _id: postID },
-        { $push: { candidates: { description: description, user: userID } } }
+        {
+          $push: {
+            candidates: { date, description: description, user: userID },
+          },
+        }
       );
       serviceType = "requestProvideService";
     } else {
       await FindServiceList.updateOne(
         { _id: postID },
-        { $push: { candidates: { description: description, user: userID } } }
+        {
+          $push: {
+            candidates: { date, description: description, user: userID },
+          },
+        }
       );
       serviceType = "requestFindService";
     }
@@ -227,7 +236,7 @@ const showMyServiceLists = async (req, res) => {
     const provideRequestList = userData.requestProvideService;
     const findRequestList = userData.requestFindService;
 
-    let requestProvideIndo =[];
+    let requestProvideIndo = [];
     let requestFindInfo = [];
 
     if (provideRequestList && provideRequestList.length > 0) {
@@ -235,7 +244,11 @@ const showMyServiceLists = async (req, res) => {
         item.candidates
           .filter((candidate) => candidate.user._id == userID)
           .map((candidate) => {
-            return { ...item.toObject(), candidateStatus: candidate.status, serviceType:'provideService' };
+            return {
+              ...item.toObject(),
+              candidateStatus: candidate.status,
+              serviceType: "provideService",
+            };
           })
       );
     }
@@ -244,7 +257,11 @@ const showMyServiceLists = async (req, res) => {
         item.candidates
           .filter((candidate) => candidate.user._id == userID)
           .map((candidate) => {
-            return { ...item.toObject(), candidateStatus: candidate.status, serviceType:'findService' };
+            return {
+              ...item.toObject(),
+              candidateStatus: candidate.status,
+              serviceType: "findService",
+            };
           })
       );
     }
@@ -288,11 +305,6 @@ const approveCandidate = async (req, res) => {
         }
       );
     }
-
-    await FindServiceList.updateOne(
-      { _id: postID },
-      { $push: { candidates: { description: description, user: userID } } }
-    );
     res.status(200).send("Approve candidate success");
   } catch (error) {
     console.log("error", error);
