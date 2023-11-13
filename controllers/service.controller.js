@@ -227,15 +227,15 @@ const showMyServiceLists = async (req, res) => {
     const provideRequestList = userData.requestProvideService;
     const findRequestList = userData.requestFindService;
 
-    let requestProvideIndo;
-    let requestFindInfo;
+    let requestProvideIndo =[];
+    let requestFindInfo = [];
 
     if (provideRequestList && provideRequestList.length > 0) {
       requestProvideIndo = provideRequestList.flatMap((item) =>
         item.candidates
           .filter((candidate) => candidate.user._id == userID)
           .map((candidate) => {
-            return { ...item.toObject(), candidateStatus: candidate.status };
+            return { ...item.toObject(), candidateStatus: candidate.status, serviceType:'provideService' };
           })
       );
     }
@@ -244,7 +244,7 @@ const showMyServiceLists = async (req, res) => {
         item.candidates
           .filter((candidate) => candidate.user._id == userID)
           .map((candidate) => {
-            return { ...item.toObject(), candidateStatus: candidate.status };
+            return { ...item.toObject(), candidateStatus: candidate.status, serviceType:'findService' };
           })
       );
     }
