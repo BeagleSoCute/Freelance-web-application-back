@@ -33,7 +33,7 @@ const register = async (req, res) => {
 const login = async (req, res) => {
   const { email, password, remember } = req.body;
   try {
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email }).select('+password');
     if (!user) {
       return res.status(400).json({ error: { msg: "Invalid user" } });
     }

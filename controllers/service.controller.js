@@ -1,6 +1,7 @@
 const FindServiceList = require("../models/findServiceList.model");
 const ProvideServiceList = require("../models/provideServiceList.model");
 const User = require("../models/user.model");
+const Project = require("../models/project.model");
 
 const addProvideService = async (req, res) => {
   const userID = req.user.id;
@@ -281,7 +282,9 @@ const approveCandidate = async (req, res) => {
   const postID = req.params.postID;
   const postType = req.params.type;
   const data = req.body;
-  const { status, candidateID } = data;
+  const { status, candidateID, candidateUserID, postTitle } = data;
+  let freelancer;
+  let seeker;
   try {
     const isApprove = status === "approve";
     if (postType === "provideService") {
@@ -294,6 +297,9 @@ const approveCandidate = async (req, res) => {
           },
         }
       );
+
+      freelancer = userID;
+      seeker = candidateUserID;
     } else {
       await FindServiceList.updateOne(
         { _id: postID, "candidates._id": candidateID },
@@ -304,7 +310,16 @@ const approveCandidate = async (req, res) => {
           },
         }
       );
+      freelancer = userID;
+      seeker = candidateUserID;
     }
+    const projectData = {
+      freelancer,
+      seeker,
+      relatedService: { id: postID, type: postType, title: postTitle },
+    };
+    newProject = new Project(projectData);
+    newProject.save();
     res.status(200).send("Approve candidate success");
   } catch (error) {
     console.log("error", error);
