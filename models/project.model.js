@@ -13,10 +13,19 @@ const projectSchema = new mongoose.Schema({
   title: {
     type: String,
   },
-  description: {
+  requirement: {
     type: String,
   },
-  dueDate: {
+  expectation: {
+    type: String,
+  },
+  scope: {
+    type: String,
+  },
+  startDate: {
+    type: String,
+  },
+  endDate: {
     type: String,
   },
   budget: {

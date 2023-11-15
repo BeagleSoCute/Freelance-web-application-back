@@ -316,6 +316,7 @@ const approveCandidate = async (req, res) => {
     const projectData = {
       freelancer,
       seeker,
+      title: postTitle,
       relatedService: { id: postID, type: postType, title: postTitle },
     };
     newProject = new Project(projectData);
