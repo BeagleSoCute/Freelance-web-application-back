@@ -7,6 +7,7 @@ const auth = require("./routes/auth.route");
 const service = require("./routes/service.route");
 const admin = require("./routes/admin.route");
 const project = require("./routes/project.route");
+const escrow = require("./routes/escrow.route");
 const cookieParser = require("cookie-parser");
 
 app.disable("etag");
@@ -22,6 +23,9 @@ app.use("/api/auth", auth);
 app.use("/api/service", service);
 app.use("/api/admin", admin);
 app.use("/api/project", project);
+app.use("/api/escrow", escrow);
+
+
 
 //NOTE listen to function to make our server application listen to client requests
 app.listen(port, () => {

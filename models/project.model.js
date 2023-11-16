@@ -10,6 +10,10 @@ const projectSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: User,
   },
+  isPaid: {
+    type: Boolean,
+    default: false,
+  },
   title: {
     type: String,
   },
@@ -90,6 +94,9 @@ const projectSchema = new mongoose.Schema({
         type: String,
       },
       date: {
+        type: String,
+      },
+      status: {
         type: String,
       },
     },

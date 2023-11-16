@@ -1,5 +1,3 @@
-const FindServiceList = require("../models/findServiceList.model");
-const ProvideServiceList = require("../models/provideServiceList.model");
 const User = require("../models/user.model");
 const Project = require("../models/project.model");
 
@@ -33,6 +31,9 @@ const showProjectDetails = async (req, res) => {
     const userInfo = await User.findOne({ _id: userID });
     const projectDetails = await Project.findOne({
       _id: projectID,
+    }).populate({
+      path: "negotiation.user",
+      select: "first_name last_name profile_picture",
     });
     const freelancerID = projectDetails.freelancer.toString();
     const seekerID = projectDetails.seeker.toString();
@@ -66,6 +67,16 @@ const updateProjectRequirement = async (req, res) => {
   const userID = req.user.id;
   const data = req.body;
   const projectID = req.params.projectID;
+  const {
+    startDate,
+    endDate,
+    requirement,
+    expectation,
+    scope,
+    budget,
+    date,
+    isEdit,
+  } = data;
   try {
     const projectData = await Project.findOne({ _id: projectID });
     const seekerID = projectData.seeker.toString();
@@ -77,13 +88,30 @@ const updateProjectRequirement = async (req, res) => {
       return;
     }
     const transformData = {
-      ...data,
+      startDate,
+      endDate,
+      requirement,
+      expectation,
+      scope,
+      budget,
       status: "negotiation",
     };
-    console.log("transformData", transformData);
     await Project.updateOne({ _id: projectID }, transformData);
-    console.log("after update");
-
+    if (isEdit) {
+      await Project.updateOne(
+        { _id: projectID },
+        {
+          $push: {
+            negotiation: {
+              user: userID,
+              comment: "I have updated the requirement",
+              date,
+              status: "EditRequirement",
+            },
+          },
+        }
+      );
+    }
     res.status(200).send("Update project requirement success");
   } catch (error) {
     console.log("error", error);
@@ -91,8 +119,60 @@ const updateProjectRequirement = async (req, res) => {
   }
 };
 
+const updateNegotiationComment = async (req, res) => {
+  const userID = req.user.id;
+  const { comment, date, status } = req.body;
+  const projectID = req.params.projectID;
+  try {
+    await Project.updateOne(
+      { _id: projectID },
+      { $push: { negotiation: { user: userID, comment, date, status } } }
+    );
+    res.status(200).send("Update comment on negotiation success");
+  } catch (error) {
+    console.log("error", error);
+    res.status(500).send("Server updateNegotiationComment is error ");
+  }
+};
+
+const freelancerApproveProjectRequirement = async (req, res) => {
+  const userID = req.user.id;
+  const projectID = req.params.projectID;
+  try {
+    const projectDetails = await Project.findOne({
+      _id: projectID,
+    });
+
+    const freelancerID = projectDetails.freelancer.toString();
+    if (userID !== freelancerID) {
+      res
+        .status(403)
+        .send("You do not have a permission to approve the requirement ");
+      return;
+    }
+    await Project.updateOne(
+      {
+        _id: projectID,
+      },
+      {
+        $set: { status: "approve" },
+      }
+    );
+    res.status(200).send("Freelancer approves the project requirement success");
+  } catch (error) {
+    console.log("error", error);
+    res
+      .status(500)
+      .send("Server freelancerApproveProjectRequirement is error ");
+  }
+};
+
+
+
 module.exports = {
   showMyProjectLists,
   showProjectDetails,
   updateProjectRequirement,
+  updateNegotiationComment,
+  freelancerApproveProjectRequirement,
 };

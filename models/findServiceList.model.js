@@ -1,8 +1,8 @@
 const mongoose = require("mongoose");
-const User = require('../models/user.model'); // Import the User model
+const User = require("../models/user.model"); // Import the User model
 
 const findServiceListSchema = new mongoose.Schema({
-  owner:{
+  owner: {
     type: mongoose.Schema.Types.ObjectId,
     ref: User,
   },
@@ -22,10 +22,6 @@ const findServiceListSchema = new mongoose.Schema({
   area: {
     type: String,
   },
-  // category: {
-  //   type: mongoose.Schema.Types.ObjectId,
-  //   ref: "Category",
-  // },
   category: {
     type: String,
   },
@@ -39,7 +35,7 @@ const findServiceListSchema = new mongoose.Schema({
         ref: User,
       },
       description: { type: String },
-      status: { type: String, default:'pending' },
+      status: { type: String, default: "pending" },
     },
   ],
 });
