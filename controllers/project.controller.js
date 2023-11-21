@@ -290,6 +290,13 @@ const completeProject = async (req, res) => {
       updateFields["isComplete.freelancer"] = isComplete;
     }
     await Project.updateOne({ _id: projectID }, { $set: updateFields });
+    const projectDataAfterUpdate = await Project.findOne({ _id: projectID });
+    const isAllComplete =
+      projectDataAfterUpdate.toObject()?.isComplete.seeker &&
+      projectDataAfterUpdate.toObject()?.isComplete.freelancer;
+    if (isAllComplete) {
+      await Project.updateOne({ _id: projectID }, { status: "complete" });
+    }
     res.status(200).send("Update project status success");
   } catch (error) {
     console.log("error", error);
