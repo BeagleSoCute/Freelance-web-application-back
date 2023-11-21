@@ -107,6 +107,16 @@ const projectSchema = new mongoose.Schema({
       type: String,
     },
   },
+  isComplete: {
+    seeker: {
+      type: Boolean,
+      default: false
+    },
+    freelancer: {
+      type: Boolean,
+      default: false
+    },
+  }
 });
 
 module.exports = Project = mongoose.model("projectSchema", projectSchema);

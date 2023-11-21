@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const { authMiddleware } = require("../middleware/auth.middleware");
 const {showMyProjectLists, showProjectDetails, updateProjectRequirement, updateNegotiationComment, 
-    freelancerApproveProjectRequirement, addTask,updateTask} = require("../controllers/project.controller")
+    freelancerApproveProjectRequirement, addTask,updateTask,addComment,completeProject, requestRejectProject} = require("../controllers/project.controller")
 
 
 router.get("/showMyProjectLists", [authMiddleware], showMyProjectLists);
@@ -12,6 +12,9 @@ router.put("/updateNegotiationComment/:projectID", [authMiddleware], updateNegot
 router.put("/freelancerApproveProjectRequirement/:projectID", [authMiddleware], freelancerApproveProjectRequirement);
 router.put("/addTask/:projectID", [authMiddleware], addTask);
 router.put("/updateTask/:projectID", [authMiddleware], updateTask);
+router.put("/addComment/:projectID", [authMiddleware], addComment);
+router.put("/completeProject/:projectID", [authMiddleware], completeProject);
+router.put("/requestRejectProject/:projectID", [authMiddleware], requestRejectProject);
 
 module.exports = router;
 

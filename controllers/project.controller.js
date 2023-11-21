@@ -38,6 +38,10 @@ const showProjectDetails = async (req, res) => {
         select: "first_name last_name profile_picture",
       })
       .populate({
+        path: "comment.user",
+        select: "first_name last_name profile_picture",
+      })
+      .populate({
         path: "freelancer",
         select: "first_name last_name _id",
       })
@@ -186,11 +190,12 @@ const addTask = async (req, res) => {
     const seekerID = projectData.seeker.toString();
     const freelancerID = projectData.freelancer.toString();
     const isSeeker = userID === seekerID;
-    const isFreelancer = userID === freelancerID;1
+    const isFreelancer = userID === freelancerID;
+    1;
     if (!isSeeker && !isFreelancer) {
       res
         .status(403)
-        .send("You do not have a permission to approve the requirement ");
+        .send("You do not have a permission to add a task in this project");
       return;
     }
     await Project.updateOne({ _id: projectID }, { $push: { task: data } });
@@ -204,18 +209,18 @@ const addTask = async (req, res) => {
 const updateTask = async (req, res) => {
   const userID = req.user.id;
   const projectID = req.params.projectID;
-  const data= req.body;
-  console.log('data',data)
+  const data = req.body;
   try {
     const projectData = await Project.findOne({ _id: projectID });
     const seekerID = projectData.seeker.toString();
     const freelancerID = projectData.freelancer.toString();
     const isSeeker = userID === seekerID;
-    const isFreelancer = userID === freelancerID;1
+    const isFreelancer = userID === freelancerID;
+    1;
     if (!isSeeker && !isFreelancer) {
       res
         .status(403)
-        .send("You do not have a permission to approve the requirement ");
+        .send("You do not have a permission to update a task in this project ");
       return;
     }
     await Project.updateOne(
@@ -229,6 +234,93 @@ const updateTask = async (req, res) => {
   }
 };
 
+const addComment = async (req, res) => {
+  const userID = req.user.id;
+  const projectID = req.params.projectID;
+  const data = req.body;
+  try {
+    const projectData = await Project.findOne({ _id: projectID });
+    const seekerID = projectData.seeker.toString();
+    const freelancerID = projectData.freelancer.toString();
+    const isSeeker = userID === seekerID;
+    const isFreelancer = userID === freelancerID;
+    if (!isSeeker && !isFreelancer) {
+      res
+        .status(403)
+        .send("You do not have a permission to add a comment on this project ");
+      return;
+    }
+    const commentData = {
+      ...data,
+      user: userID,
+    };
+    await Project.updateOne(
+      { _id: projectID },
+      { $push: { comment: commentData } }
+    );
+    res.status(200).send("Add comment success");
+  } catch (error) {
+    console.log("error", error);
+    res.status(500).send("Server addComment is error ");
+  }
+};
+
+const completeProject = async (req, res) => {
+  const userID = req.user.id;
+  const projectID = req.params.projectID;
+  const { isComplete } = req.body;
+
+  try {
+    const projectData = await Project.findOne({ _id: projectID });
+    const seekerID = projectData.seeker.toString();
+    const freelancerID = projectData.freelancer.toString();
+    const isSeeker = userID === seekerID;
+    const isFreelancer = userID === freelancerID;
+    if (!isSeeker && !isFreelancer) {
+      res
+        .status(403)
+        .send("You do not have a permission to add a comment on this project ");
+      return;
+    }
+    const updateFields = {};
+
+    if (isSeeker) {
+      updateFields["isComplete.seeker"] = isComplete;
+    } else if (isFreelancer) {
+      updateFields["isComplete.freelancer"] = isComplete;
+    }
+    await Project.updateOne({ _id: projectID }, { $set: updateFields });
+    res.status(200).send("Update project status success");
+  } catch (error) {
+    console.log("error", error);
+    res.status(500).send("Server completeProject is error ");
+  }
+};
+
+const requestRejectProject = async (req, res) => {
+  const userID = req.user.id;
+  const projectID = req.params.projectID;
+  try {
+    const projectData = await Project.findOne({ _id: projectID });
+    const seekerID = projectData.seeker.toString();
+    const freelancerID = projectData.freelancer.toString();
+    const isSeeker = userID === seekerID;
+    const isFreelancer = userID === freelancerID;
+    if (!isSeeker && !isFreelancer) {
+      res
+        .status(403)
+        .send("You do not have a permission to add a comment on this project ");
+      return;
+    }
+
+    await Project.updateOne({ _id: projectID }, { status: "requestReject" });
+    res.status(200).send("Request reject the project status success");
+  } catch (error) {
+    console.log("error", error);
+    res.status(500).send("Server requestRejectProject is error ");
+  }
+};
+
 module.exports = {
   showMyProjectLists,
   showProjectDetails,
@@ -236,5 +328,8 @@ module.exports = {
   updateNegotiationComment,
   freelancerApproveProjectRequirement,
   addTask,
-  updateTask
+  updateTask,
+  addComment,
+  completeProject,
+  requestRejectProject,
 };
