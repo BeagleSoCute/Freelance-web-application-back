@@ -1,5 +1,6 @@
 const User = require("../models/user.model");
 const Project = require("../models/project.model");
+const { updateOne } = require("../models/provideServiceList.model");
 
 const showMyProjectLists = async (req, res) => {
   const userID = req.user.id;
@@ -31,12 +32,21 @@ const showProjectDetails = async (req, res) => {
     const userInfo = await User.findOne({ _id: userID });
     const projectDetails = await Project.findOne({
       _id: projectID,
-    }).populate({
-      path: "negotiation.user",
-      select: "first_name last_name profile_picture",
-    });
-    const freelancerID = projectDetails.freelancer.toString();
-    const seekerID = projectDetails.seeker.toString();
+    })
+      .populate({
+        path: "negotiation.user",
+        select: "first_name last_name profile_picture",
+      })
+      .populate({
+        path: "freelancer",
+        select: "first_name last_name _id",
+      })
+      .populate({
+        path: "seeker",
+        select: "first_name last_name _id",
+      });
+    const freelancerID = projectDetails.freelancer._id.toString();
+    const seekerID = projectDetails.seeker._id.toString();
     const isFreelancer = userID === freelancerID;
     const isSeeker = userID === seekerID;
     let myRole;
@@ -167,7 +177,57 @@ const freelancerApproveProjectRequirement = async (req, res) => {
   }
 };
 
+const addTask = async (req, res) => {
+  const userID = req.user.id;
+  const projectID = req.params.projectID;
+  const data = req.body;
+  try {
+    const projectData = await Project.findOne({ _id: projectID });
+    const seekerID = projectData.seeker.toString();
+    const freelancerID = projectData.freelancer.toString();
+    const isSeeker = userID === seekerID;
+    const isFreelancer = userID === freelancerID;1
+    if (!isSeeker && !isFreelancer) {
+      res
+        .status(403)
+        .send("You do not have a permission to approve the requirement ");
+      return;
+    }
+    await Project.updateOne({ _id: projectID }, { $push: { task: data } });
+    res.status(200).send("Add task success");
+  } catch (error) {
+    console.log("error", error);
+    res.status(500).send("Server updateTask is error ");
+  }
+};
 
+const updateTask = async (req, res) => {
+  const userID = req.user.id;
+  const projectID = req.params.projectID;
+  const data= req.body;
+  console.log('data',data)
+  try {
+    const projectData = await Project.findOne({ _id: projectID });
+    const seekerID = projectData.seeker.toString();
+    const freelancerID = projectData.freelancer.toString();
+    const isSeeker = userID === seekerID;
+    const isFreelancer = userID === freelancerID;1
+    if (!isSeeker && !isFreelancer) {
+      res
+        .status(403)
+        .send("You do not have a permission to approve the requirement ");
+      return;
+    }
+    await Project.updateOne(
+      { _id: projectID, "task._id": data?.id },
+      { $set: { "task.$": data } }
+    );
+    res.status(200).send("Update task success");
+  } catch (error) {
+    console.log("error", error);
+    res.status(500).send("Server updateTask is error ");
+  }
+};
 
 module.exports = {
   showMyProjectLists,
@@ -175,4 +235,6 @@ module.exports = {
   updateProjectRequirement,
   updateNegotiationComment,
   freelancerApproveProjectRequirement,
+  addTask,
+  updateTask
 };

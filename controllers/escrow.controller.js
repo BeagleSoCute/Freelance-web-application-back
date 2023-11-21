@@ -14,7 +14,7 @@ const seekerPayForService = async (req, res) => {
   try {
     newEscrowRecord = new Escrow(transformData);
     newEscrowRecord.save();
-    await Project.updateOne({ _id: projectID }, { $set: { isPaid: true, status:'open' } });
+    await Project.updateOne({ _id: projectID }, { $set: { isPaid: true, status:'inProgress' } });
     res.status(200).send("Pay for the service success");
   } catch (error) {
     console.log("error", error);

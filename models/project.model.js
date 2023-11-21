@@ -61,25 +61,22 @@ const projectSchema = new mongoose.Schema({
       description: {
         type: String,
       },
-      dueDate: {
+      scope: {
         type: String,
       },
-      status: {
+      date: {
         type: String,
-        default: "pending",
       },
-      comment: [
+      progress: {
+        type: String,
+      },
+      priority: {
+        type: String,
+      },
+      checkList: [
         {
-          user: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: User,
-          },
-          comment: {
-            type: String,
-          },
-          date: {
-            type: String,
-          },
+          description: String,
+          isDone: Boolean,
         },
       ],
     },
