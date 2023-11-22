@@ -107,16 +107,27 @@ const projectSchema = new mongoose.Schema({
       type: String,
     },
   },
+  feedback: [
+    {
+      user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: User,
+      },
+      rating: { type: String },
+      date: { type: String },
+      comment: { type: String },
+    },
+  ],
   isComplete: {
     seeker: {
       type: Boolean,
-      default: false
+      default: false,
     },
     freelancer: {
       type: Boolean,
-      default: false
+      default: false,
     },
-  }
+  },
 });
 
 module.exports = Project = mongoose.model("projectSchema", projectSchema);

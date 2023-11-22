@@ -25,6 +25,9 @@ const escrowSchema = new mongoose.Schema({
   date: {
     type: String,
   },
+  paidToFreelancerDate:{
+    type:String
+  }
 });
 
 module.exports = Escrow = mongoose.model("escrowSchema", escrowSchema);

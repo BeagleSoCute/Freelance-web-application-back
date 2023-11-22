@@ -1,6 +1,6 @@
 const User = require("../models/user.model");
 const Project = require("../models/project.model");
-const { updateOne } = require("../models/provideServiceList.model");
+const Escrow = require("../models/escrow.model");
 
 const showMyProjectLists = async (req, res) => {
   const userID = req.user.id;
@@ -16,6 +16,7 @@ const showMyProjectLists = async (req, res) => {
         path: "seeker",
         select: "first_name last_name",
       });
+
     res.status(200).json({
       projectLists,
     });
@@ -33,6 +34,10 @@ const showProjectDetails = async (req, res) => {
     const projectDetails = await Project.findOne({
       _id: projectID,
     })
+      .populate({
+        path: "feedback.user",
+        select: "first_name last_name _id profile_picture",
+      })
       .populate({
         path: "negotiation.user",
         select: "first_name last_name profile_picture",
@@ -62,9 +67,13 @@ const showProjectDetails = async (req, res) => {
       } else {
         myRole = "admin";
       }
+      const isDoneFeedback = projectDetails
+        .toObject()
+        ?.feedback.some((item) => item.user._id.toString() === userID);
       res.status(200).json({
         projectDetails,
         myRole,
+        isDoneFeedback,
       });
     } else {
       res
@@ -328,6 +337,66 @@ const requestRejectProject = async (req, res) => {
   }
 };
 
+const provideFeedback = async (req, res) => {
+  const userID = req.user.id;
+  const projectID = req.params.projectID;
+  const data = req.body;
+  try {
+    const projectData = await Project.findOne({ _id: projectID });
+    const seekerID = projectData.seeker.toString();
+    const freelancerID = projectData.freelancer.toString();
+    const isSeeker = userID === seekerID;
+    const isFreelancer = userID === freelancerID;
+    if (!isSeeker && !isFreelancer) {
+      res
+        .status(403)
+        .send("You do not have a permission to add a comment on this project ");
+      return;
+    }
+    const myRole = isSeeker ? "seeker" : "freelancer";
+
+    await Project.updateOne(
+      { _id: projectID },
+      {
+        $push: {
+          feedback: {
+            ...data,
+            user: userID,
+          },
+        },
+      }
+    );
+    await User.updateOne(
+      { _id: myRole === "seeker" ? freelancerID : seekerID },
+      {
+        $push: {
+          [myRole === "seeker" ? "freelancer_feedbacks" : "seeker_feedbacks"]: {
+            ...data,
+            project: projectID,
+            user: userID,
+          },
+        },
+      }
+    );
+    if (myRole === "freelancer") {
+      await Escrow.updateOne(
+        { project: projectID },
+        {
+          $set: {
+            status: "done",
+            isPaidToFreelancer: true,
+            paidToFreelancerDate: data?.date,
+          },
+        }
+      );
+    }
+    res.status(200).send("Request reject the project status success");
+  } catch (error) {
+    console.log("error", error);
+    res.status(500).send("Server requestRejectProject is error ");
+  }
+};
+
 module.exports = {
   showMyProjectLists,
   showProjectDetails,
@@ -339,4 +408,5 @@ module.exports = {
   addComment,
   completeProject,
   requestRejectProject,
+  provideFeedback,
 };

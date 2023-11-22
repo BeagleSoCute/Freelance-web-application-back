@@ -1,31 +1,20 @@
 const mongoose = require("mongoose");
 
 const feedbackModel = {
-  positive: {
-    type: Number,
-    default: 0,
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
   },
-  negative: {
-    type: Number,
-    default: 0,
-  },
-  neutral: {
-    type: Number,
-    default: 0,
-  },
-  review: [
-    {
-      user: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "post",
-      },
-      feedback: { type: String },
-      date: { type: String },
-      comment: { type: String },
+  project: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: function () {
+      return require("../models/project.model");
     },
-  ],
+  },
+  rating: { type: String },
+  date: { type: String },
+  comment: { type: String },
 };
-
 const userSchema = new mongoose.Schema({
   profile_picture: {
     type: String,
@@ -39,7 +28,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     minlength: 6,
     required: true,
-    select: false
+    select: false,
   },
   first_name: {
     type: String,
@@ -84,14 +73,12 @@ const userSchema = new mongoose.Schema({
       },
     },
   ],
-  seeker_feedbacks: feedbackModel,
-  provider_feedbacks: feedbackModel,
-  // posts: [
-  //   {
-  //     type: mongoose.Schema.Types.ObjectId,
-  //     ref: "post",
-  //   },
-  // ],
+  seeker_feedbacks: [
+    feedbackModel
+  ],
+  freelancer_feedbacks: [
+    feedbackModel
+  ],
   requestProvideService: [
     {
       type: mongoose.Schema.Types.ObjectId,
@@ -110,4 +97,4 @@ const userSchema = new mongoose.Schema({
   ],
 });
 
-module.exports = User = mongoose.model("user", userSchema);
+module.exports = User = mongoose.model("User", userSchema);
