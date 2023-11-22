@@ -53,6 +53,7 @@ const getUserDetails = async (req, res) => {
     }
     res.json(user);
   } catch (err) {
+    console.log('error',err)
     res.status(500).send("Server getUserDetails is error ");
   }
 };

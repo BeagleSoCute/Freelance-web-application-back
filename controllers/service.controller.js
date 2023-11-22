@@ -310,8 +310,8 @@ const approveCandidate = async (req, res) => {
           },
         }
       );
-      freelancer = userID;
-      seeker = candidateUserID;
+      freelancer = candidateUserID;
+      seeker = userID;
     }
     const projectData = {
       freelancer,

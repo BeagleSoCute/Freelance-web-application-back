@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const Project = require("../models/project.model"); // Import the User model
+const User = require("../models/user.model")
 
 const escrowSchema = new mongoose.Schema({
   project: {
@@ -25,9 +26,14 @@ const escrowSchema = new mongoose.Schema({
   date: {
     type: String,
   },
-  paidToFreelancerDate:{
-    type:String
-  }
+  freelancer: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: User,
+  },
+  seeker: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: User,
+  },
 });
 
 module.exports = Escrow = mongoose.model("escrowSchema", escrowSchema);
