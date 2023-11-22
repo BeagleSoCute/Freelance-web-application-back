@@ -35,7 +35,19 @@ const getAllUsersData = async (req, res) => {
 const getUserDetails = async (req, res) => {
   const userId = req.params.userId;
   try {
-    const user = await User.findOne({ _id: userId }, { password: 0 });
+    const user = await User.findOne({ _id: userId }, { password: 0 })
+      .populate({
+        path: "seeker_feedbacks.project",
+        select: "title",
+      })
+      .populate({
+        path: "seeker_feedbacks.user",
+        select: "first_name last_name profile_picture",
+      })
+      .populate({
+        path: "freelancer_feedbacks.user",
+        select: "first_name last_name profile_picture",
+      });
     if (!user) {
       res.status(400).json({ error: { msg: "This email is not exist!" } });
     }
