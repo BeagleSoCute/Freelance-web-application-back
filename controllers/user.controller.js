@@ -4,7 +4,19 @@ const uploadImage = require("../helpers/upload");
 const getUserData = async (req, res) => {
   const id = req.user.id;
   try {
-    const user = await User.findOne({ _id: id }, { password: 0 });
+    const user = await User.findOne({ _id: id }, { password: 0 })
+      .populate({
+        path: "seeker_feedbacks.project",
+        select: "title",
+      })
+      .populate({
+        path: "seeker_feedbacks.user",
+        select: "first_name last_name profile_picture",
+      })
+      .populate({
+        path: "freelancer_feedbacks.user",
+        select: "first_name last_name profile_picture",
+      });
     res.json(user);
   } catch (err) {
     res.status(500).send("Server getUserData is error ");
@@ -91,18 +103,18 @@ const editPortfolio = async (req, res) => {
   const data = req.body;
   const image = req.file;
   const portfolioData = JSON.parse(data.portfolioData);
-  const originalImage = data.originalImage
+  const originalImage = data.originalImage;
   try {
     const imageUrl = await uploadImage(image);
     let savingData;
-   
-      savingData = {
-        ...portfolioData,
-        portfolio_picture: imageUrl? imageUrl : originalImage,
-      };
-   await User.updateOne(
-      { _id: userId, 'portfolios._id': portfolioData._id },
-      { $set: { 'portfolios.$': savingData } }
+
+    savingData = {
+      ...portfolioData,
+      portfolio_picture: imageUrl ? imageUrl : originalImage,
+    };
+    await User.updateOne(
+      { _id: userId, "portfolios._id": portfolioData._id },
+      { $set: { "portfolios.$": savingData } }
     );
     const returnData = await User.findOne({ _id: userId }, { password: 0 });
     res.json(returnData);
