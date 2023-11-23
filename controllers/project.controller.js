@@ -16,7 +16,6 @@ const showMyProjectLists = async (req, res) => {
         path: "seeker",
         select: "first_name last_name",
       });
-
     res.status(200).json({
       projectLists,
     });
@@ -316,6 +315,7 @@ const completeProject = async (req, res) => {
 const requestRejectProject = async (req, res) => {
   const userID = req.user.id;
   const projectID = req.params.projectID;
+  const {rejectReason} = req.body;
   try {
     const projectData = await Project.findOne({ _id: projectID });
     const seekerID = projectData.seeker.toString();
@@ -329,13 +329,14 @@ const requestRejectProject = async (req, res) => {
       return;
     }
 
-    await Project.updateOne({ _id: projectID }, { status: "requestReject" });
+    await Project.updateOne({ _id: projectID }, { status: "requestReject", reporter:userID, rejectReason });
     res.status(200).send("Request reject the project status success");
   } catch (error) {
     console.log("error", error);
     res.status(500).send("Server requestRejectProject is error ");
   }
 };
+
 
 const provideFeedback = async (req, res) => {
   const userID = req.user.id;

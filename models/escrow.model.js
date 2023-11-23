@@ -26,6 +26,10 @@ const escrowSchema = new mongoose.Schema({
   date: {
     type: String,
   },
+  paidToFreelancerDate: {
+    type: String,
+    default:'-'
+  },
   freelancer: {
     type: mongoose.Schema.Types.ObjectId,
     ref: User,

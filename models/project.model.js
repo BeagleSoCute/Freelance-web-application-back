@@ -128,6 +128,11 @@ const projectSchema = new mongoose.Schema({
       default: false,
     },
   },
+  reporter: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: User,
+  },
+  rejectReason: String,
 });
 
 module.exports = Project = mongoose.model("projectSchema", projectSchema);
