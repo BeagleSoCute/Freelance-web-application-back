@@ -53,7 +53,7 @@ const retriveRequestRejectProject = async (req, res) => {
 
 const approveRejectProject = async (req, res) => {
   const projectID = req.params.projectID;
-  const isApprove = req.body;
+  const {isApprove} = req.body;
   let updateObj;
   if (isApprove) {
     updateObj = { status: "reject" };
