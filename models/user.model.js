@@ -50,9 +50,6 @@ const userSchema = new mongoose.Schema({
     type: String,
   },
   skills: [String],
-  coin: {
-    type: Number,
-  },
   portfolios: [
     {
       id: {
