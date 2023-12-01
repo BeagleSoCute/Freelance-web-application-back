@@ -73,24 +73,14 @@ const refundMoneyData = async (req, res) => {
   const userID = req.user.id;
   const target = req.data;
   const transactionID = req.params.transactionID;
-  const projectID = req.params.projectID;
   try {
     const userInfo = await User.findOne({ _id: userID });
-    const projectData = await Project.findOne({ _id: projectID });
     const EscrowData = await Escrow.findOne({ _id: transactionID });
 
     if (userInfo.role !== "admin") {
       res
         .status(403)
         .send("You are not authorized to access this information ");
-      return;
-    }
-    if (projectData.status !== "reject") {
-      res
-        .status(403)
-        .send(
-          "You can not refund money because of the project status is not match the condition "
-        );
       return;
     }
     if (
